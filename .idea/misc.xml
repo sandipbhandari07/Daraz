@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/daraz/app/src/main/res/drawable/btn_login.xml" value="0.2535" />
+        <entry key="..\:/daraz/app/src/main/res/drawable/btn_login_full.xml" value="0.2265" />
+        <entry key="..\:/daraz/app/src/main/res/drawable/btn_login_rgb.xml" value="0.251" />
+        <entry key="..\:/daraz/app/src/main/res/drawable/gps.xml" value="0.2535" />
+        <entry key="..\:/daraz/app/src/main/res/drawable/ic_baseline_person_24.xml" value="0.2535" />
+        <entry key="..\:/daraz/app/src/main/res/drawable/intro_btn_gradient_style.xml" value="0.2495" />
+        <entry key="..\:/daraz/app/src/main/res/drawable/person.xml" value="0.2535" />
+        <entry key="..\:/daraz/app/src/main/res/font/aclonica.xml" value="0.284375" />
+        <entry key="..\:/daraz/app/src/main/res/font/akaya_telivigala.xml" value="0.284375" />
+        <entry key="..\:/daraz/app/src/main/res/font/antic.xml" value="0.284375" />
+        <entry key="..\:/daraz/app/src/main/res/font/audiowide.xml" value="0.284375" />
+        <entry key="..\:/daraz/app/src/main/res/font/bangers.xml" value="0.284375" />
+        <entry key="..\:/daraz/app/src/main/res/font/bevan.xml" value="0.284375" />
+        <entry key="..\:/daraz/app/src/main/res/font/bubblegum_sans.xml" value="0.284375" />
+        <entry key="..\:/daraz/app/src/main/res/font/bungee.xml" value="0.284375" />
+        <entry key="..\:/daraz/app/src/main/res/layout/activity_forget_password.xml" value="0.2" />
+        <entry key="..\:/daraz/app/src/main/res/layout/activity_login.xml" value="0.2" />
+        <entry key="..\:/daraz/app/src/main/res/layout/activity_register_seller.xml" value="0.25" />
+        <entry key="..\:/daraz/app/src/main/res/layout/activity_register_user.xml" value="0.2" />
+        <entry key="..\:/daraz/app/src/main/res/layout/activity_splash.xml" value="0.22826086956521738" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>
