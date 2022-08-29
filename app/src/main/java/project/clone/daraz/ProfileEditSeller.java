@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
@@ -23,7 +24,6 @@ import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -35,24 +35,29 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-public class RegisterSeller extends AppCompatActivity implements LocationListener {
+public class ProfileEditSeller extends AppCompatActivity implements LocationListener {
 
     private ImageButton backbtn, gpsbtn;
     private ImageView profile;
-    private EditText name, shopname, phone, deliver, countryet, stateet, cityet, addresset, email, password, confirmpassword;
-    private Button registerbtn;
+    private EditText namet, shopnamet, phonet, deliveret, countryet, stateet, cityet, addresset;
+    private Button updatebtn;
+    private SwitchCompat shopopenswitch;
 
     private static final int LOCATION_REQUEST_CODE = 100;
     private static final int CAMERA_REQUEST_CODE = 200;
@@ -62,13 +67,12 @@ public class RegisterSeller extends AppCompatActivity implements LocationListene
 
     private String[] camerapermisson;
     private String[] storagepermisson;
+    private String[] locationpermisson;
 
     //image picked uri
     private Uri image_uri;
 
     private double latitude, longitude;
-    private String[] locationpermisson;
-
     private FirebaseAuth firebaseAuth;
     private ProgressDialog progressDialog;
 
@@ -79,22 +83,22 @@ public class RegisterSeller extends AppCompatActivity implements LocationListene
         super.onCreate(savedInstanceState);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
         getWindow().setStatusBarColor(Color.BLACK);
-        setContentView(R.layout.activity_register_seller);
-        backbtn = findViewById(R.id.backbtn_register_seller);
-        gpsbtn = findViewById(R.id.gps_seller);
-        profile = findViewById(R.id.profileIv_seller);
-        name = findViewById(R.id.fullname_selller);
-        phone = findViewById(R.id.phonenumber_seller);
-        countryet = findViewById(R.id.country_seller);
-        stateet = findViewById(R.id.state_seller);
-        email = findViewById(R.id.email_register_selller);
-        cityet = findViewById(R.id.city_seller);
-        addresset = findViewById(R.id.completeaddress_selller);
-        password = findViewById(R.id.password_register_seller);
-        confirmpassword = findViewById(R.id.confirm_password_selller);
-        registerbtn = findViewById(R.id.login_btn_register_seller);
-        shopname = findViewById(R.id.shopname_seller);
-        deliver = findViewById(R.id.deliveryfee_resgiter_seller);
+        setContentView(R.layout.activity_profile_edit_seller);
+
+        backbtn = findViewById(R.id.ps_backbtn_register_seller);
+        gpsbtn = findViewById(R.id.ps_gps_seller);
+        profile = findViewById(R.id.ps_profileIv_seller);
+        namet = findViewById(R.id.ps_fullname_selller);
+        phonet = findViewById(R.id.ps_phonenumber_seller);
+        countryet = findViewById(R.id.ps_country_seller);
+        stateet = findViewById(R.id.ps_state_seller);
+        cityet = findViewById(R.id.ps_city_seller);
+        addresset = findViewById(R.id.ps_completeaddress_selller);
+        shopnamet = findViewById(R.id.ps_shopname_seller);
+        deliveret = findViewById(R.id.ps_deliveryfee_resgiter_seller);
+
+        updatebtn=findViewById(R.id.ps_login_btn_update_seller);
+        shopopenswitch=findViewById(R.id.shopopenswitch);
 
         //init permisson array
         locationpermisson = new String[]{Manifest.permission.ACCESS_FINE_LOCATION};
@@ -104,14 +108,8 @@ public class RegisterSeller extends AppCompatActivity implements LocationListene
         firebaseAuth = FirebaseAuth.getInstance();
         progressDialog = new ProgressDialog(this);
         progressDialog.setCanceledOnTouchOutside(false);
-
-        registerbtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //register user
-                inputData();
-            }
-        });
+        
+        checkUser();
 
         profile.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -120,12 +118,20 @@ public class RegisterSeller extends AppCompatActivity implements LocationListene
                 showImagepickDialog();
             }
         });
+        updatebtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                inputData();
+            }
+        });
         backbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 onBackPressed();
             }
         });
+
         gpsbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -139,103 +145,69 @@ public class RegisterSeller extends AppCompatActivity implements LocationListene
         });
     }
 
-    private String Sfullname, Sshopnameid, Sphonnumberid, Sdeliveryfee, Scountrydid, Sstate, Scity, Saddress, Semailid, Spasswordid, Sconfirmpasswordid;
-
+    private String sname,sshopname,sphone,sdeliveryfee,scountry,sstate,scity,saddress;
+    private boolean sshopeopen;
     private void inputData() {
-        Sfullname = name.getText().toString().trim();
-        Sshopnameid = shopname.getText().toString().trim();
-        Sphonnumberid = phone.getText().toString().trim();
-        Sdeliveryfee = deliver.getText().toString().trim();
-        Scountrydid = countryet.getText().toString().trim();
-        Sstate = stateet.getText().toString().trim();
-        Scity = cityet.getText().toString().trim();
-        Saddress = addresset.getText().toString().trim();
-        Semailid = email.getText().toString().trim();
-        Spasswordid = password.getText().toString().trim();
-        Sconfirmpasswordid = confirmpassword.getText().toString().trim();
-
-        if (TextUtils.isEmpty(Sfullname)) {
-            Toast.makeText(this, "Enter Name......", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (TextUtils.isEmpty(Sshopnameid)) {
-            Toast.makeText(this, "Enter Name......", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (TextUtils.isEmpty(Sphonnumberid)) {
-            Toast.makeText(this, "Enter Name......", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        createaccount();
+        //inputdata
+        sname=namet.getText().toString().trim();
+        sshopname=shopnamet.getText().toString().trim();
+        sphone=phonet.getText().toString().trim();
+        sdeliveryfee=deliveret.getText().toString().trim();
+        scountry=countryet.getText().toString().trim();
+        sstate=stateet.getText().toString().trim();
+        scity=cityet.getText().toString().trim();
+        saddress=addresset.getText().toString().trim();
+        sshopeopen=shopopenswitch.isChecked();
+        
+        updateprofile();
     }
 
-    private void createaccount() {
-        progressDialog.setMessage("creating account....");
+    private void updateprofile() {
+        progressDialog.setMessage("updating Profile......");
         progressDialog.show();
 
-        firebaseAuth.createUserWithEmailAndPassword(Semailid, Spasswordid).addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                    @Override
-                    public void onSuccess(AuthResult authResult) {
-                        saveFirebaseData();
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        progressDialog.dismiss();
-                        Toast.makeText(RegisterSeller.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
+        if (image_uri == null){
+            //update without image
 
-    private void saveFirebaseData() {
-        progressDialog.setMessage("saving account info....");
+            //setup data to update
+            HashMap<String,Object> hashMap = new HashMap<>();
+            hashMap.put("name",""+sname);
 
-        String timestamp = "" + System.currentTimeMillis();
-        if (image_uri == null) {
-            //save  info without image
-
-            //setup data to save
-            HashMap<String, Object> hashMap = new HashMap<>();
-            hashMap.put("uid", "" + firebaseAuth.getUid());
-            hashMap.put("email", "" + Semailid);
-            hashMap.put("name", "" + Sfullname);
-            hashMap.put("shopname", "" + Sshopnameid);
-            hashMap.put("phone", "" + Sphonnumberid);
-            hashMap.put("deliveryfee", "" + Sdeliveryfee);
-            hashMap.put("country", "" + Scountrydid);
-            hashMap.put("state", "" + Sstate);
-            hashMap.put("city", "" + Scity);
-            hashMap.put("address", "" + Saddress);
-          //  hashMap.put("latitude", "" + latitude);
-            hashMap.put("password", "" + Spasswordid);
-         //   hashMap.put("longitude", "" + longitude);
-            hashMap.put("timestamp", "" + timestamp);
-            hashMap.put("accountType", "Seller");
-            hashMap.put("online", "true");
+            hashMap.put("shopname", "" + sshopname);
+            hashMap.put("phone", "" + sphone);
+            hashMap.put("deliveryfee", "" + sdeliveryfee);
+            hashMap.put("country", "" + scountry);
+            hashMap.put("state", "" + sstate);
+            hashMap.put("city", "" + scity);
+            hashMap.put("address", "" + saddress);
+       //     hashMap.put("latitude", "" + latitude);
+        //    hashMap.put("longitude", "" + longitude);
             hashMap.put("shopOpen", "true");
-            hashMap.put("profileImage", "");
 
-            //save to db
-            DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-            reference.child(firebaseAuth.getUid()).setValue(hashMap)
+            //update to Db
+            DatabaseReference reference= FirebaseDatabase.getInstance().getReference("Users");
+            reference.child(firebaseAuth.getUid()).updateChildren(hashMap)
                     .addOnSuccessListener(new OnSuccessListener<Void>() {
                         @Override
                         public void onSuccess(Void unused) {
+                            //updated
                             progressDialog.dismiss();
-                            startActivity(new Intent(RegisterSeller.this, MainSeller.class));
-                            finish();
+                            Toast.makeText(ProfileEditSeller.this, "profile updated....", Toast.LENGTH_SHORT).show();
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
+                            //failed to update
                             progressDialog.dismiss();
-                            startActivity(new Intent(RegisterSeller.this, MainSeller.class));
-                            finish();
+                            Toast.makeText(ProfileEditSeller.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
-        } else {
-            //save info with image
+
+        }
+        else {
+            //update with image
+
+            //image first
             String filepathandname = "profile_image/" + "" + firebaseAuth.getUid();
 
             //upload image
@@ -249,54 +221,126 @@ public class RegisterSeller extends AppCompatActivity implements LocationListene
                             Uri downloadimageuri = uriTask.getResult();
                             if (uriTask.isSuccessful()) {
 
-                                HashMap<String, Object> hashMap = new HashMap<>();
-                                hashMap.put("uid", "" + firebaseAuth.getUid());
-                                hashMap.put("email", "" + Semailid);
-                                hashMap.put("name", "" + Sfullname);
-                                hashMap.put("shopname", "" + Sshopnameid);
-                                hashMap.put("phone", "" + Sphonnumberid);
-                                hashMap.put("deliveryfee", "" + Sdeliveryfee);
-                                hashMap.put("country", "" + Scountrydid);
-                                hashMap.put("state", "" + Sstate);
-                                hashMap.put("city", "" + Scity);
-                                hashMap.put("address", "" + Saddress);
+                                //setup data to update
+                                HashMap<String,Object> hashMap = new HashMap<>();
+                                hashMap.put("name",""+sname);
+
+                                hashMap.put("shopname", "" + sshopname);
+                                hashMap.put("phone", "" + sphone);
+                                hashMap.put("deliveryfee", "" + sdeliveryfee);
+                                hashMap.put("country", "" + scountry);
+                                hashMap.put("state", "" + sstate);
+                                hashMap.put("city", "" + scity);
+                                hashMap.put("address", "" + saddress);
                             //    hashMap.put("latitude", "" + latitude);
                              //   hashMap.put("longitude", "" + longitude);
-                                hashMap.put("password", "" + Spasswordid);
-                                hashMap.put("timestamp", "" + timestamp);
-                                hashMap.put("accountType", "Seller");
-                                hashMap.put("online", "true");
                                 hashMap.put("shopOpen", "true");
                                 hashMap.put("profileImage", downloadimageuri);
-                                //save to db
-                                DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
-                                reference.child(firebaseAuth.getUid()).setValue(hashMap)
+
+                                //update to Db
+                                DatabaseReference reference= FirebaseDatabase.getInstance().getReference("Users");
+                                reference.child(firebaseAuth.getUid()).updateChildren(hashMap)
                                         .addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
                                             public void onSuccess(Void unused) {
+                                                //updated
                                                 progressDialog.dismiss();
-                                                startActivity(new Intent(RegisterSeller.this, MainSeller.class));
-                                                finish();
+                                                Toast.makeText(ProfileEditSeller.this, "profile updated....", Toast.LENGTH_SHORT).show();
                                             }
                                         }).addOnFailureListener(new OnFailureListener() {
                                             @Override
                                             public void onFailure(@NonNull Exception e) {
+                                                //failed to update
                                                 progressDialog.dismiss();
-                                                startActivity(new Intent(RegisterSeller.this, MainSeller.class));
-                                                finish();
+                                                Toast.makeText(ProfileEditSeller.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
                                             }
                                         });
+
                             }
                         }
                     }).addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(RegisterSeller.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ProfileEditSeller.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     });
         }
     }
+    private void checkUser() {
+        FirebaseUser user= firebaseAuth.getCurrentUser();
+        if (user == null)
+        {
+            startActivity(new Intent(ProfileEditSeller.this,LoginActivity.class));
+            finish();
+        }
+        else{
+            loadMyinfo();
+        }
+    }
 
+    private void loadMyinfo() {
+        DatabaseReference reference= FirebaseDatabase.getInstance().getReference("Users");
+        reference.orderByChild("uid").equalTo(firebaseAuth.getUid())
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot ds: snapshot.getChildren())
+                        {
+                            String name=""+ds.child("name").getValue();
+                            String accountType= ""+ds.child("accountType").getValue();
+                            String address= ""+ds.child("address").getValue();
+                            String city= ""+ds.child("city").getValue();
+                            String state= ""+ds.child("state").getValue();
+                            String country= ""+ds.child("country").getValue();
+                            String deliverfee= ""+ds.child("deliverfee").getValue();
+                            String email= ""+ds.child("email").getValue();
+                         //    latitude= Double.parseDouble(""+ds.child("latitude").getValue());
+                        //     longitude=Double.parseDouble( ""+ds.child("longitude").getValue());
+                            String online= ""+ds.child("online").getValue();
+                            String phone= ""+ds.child("phone").getValue();
+                            String profileImage= ""+ds.child("profileImage").getValue();
+                            String timestamp= ""+ds.child("timestamp").getValue();
+                            String shopname= ""+ds.child("shopname").getValue();
+                            String shopOpen= ""+ds.child("shopOpen").getValue();
+                            String uid= ""+ds.child("uid").getValue();
+
+                            namet.setText(name);
+                            phonet.setText(phone);
+                            countryet.setText(country);
+                            stateet.setText(state);
+                            cityet.setText(city);
+                            addresset.setText(address);
+                            shopnamet.setText(shopname);
+                            deliveret.setText(deliverfee);
+                            if (shopOpen.equals("true"))
+                            {
+                                shopopenswitch.setChecked(false);
+                            }
+                            else
+                            {
+                                shopopenswitch.setChecked(true);
+                            }
+                            try {
+                                Picasso.get().load(profileImage).placeholder(R.drawable.logoma).into(profile);
+                            }catch (Exception e)
+                            {
+                                profile.setImageResource(R.drawable.ic_baseline_person_24);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
+    }
+
+    private void pickfromgallery() {
+        Intent intent = new Intent(Intent.ACTION_PICK);
+        intent.setType("image/*");
+        startActivityForResult(intent, IMAGE_PICK_GALLERY_CODE);
+    }
 
     private void showImagepickDialog() {
         String[] options = {"Camera", "Gallery"};
@@ -324,12 +368,6 @@ public class RegisterSeller extends AppCompatActivity implements LocationListene
         }).show();
     }
 
-    private void pickfromgallery() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setType("image/*");
-        startActivityForResult(intent, IMAGE_PICK_GALLERY_CODE);
-    }
-
     private void pickfromcamera() {
         ContentValues contentValues = new ContentValues();
         contentValues.put(MediaStore.Images.Media.TITLE, "Temp_Image Title");
@@ -342,6 +380,15 @@ public class RegisterSeller extends AppCompatActivity implements LocationListene
         startActivityForResult(intent, IMAGE_PICK_CAMERA_CODE);
     }
 
+    private boolean checklocalpermisson(){
+        boolean result= ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION)
+                == (PackageManager.PERMISSION_GRANTED);
+        return result;
+    }
+    private void requestlocationpermisson()
+    {
+        ActivityCompat.requestPermissions(this,locationpermisson,LOCATION_REQUEST_CODE);
+    }
     private void detectlocation() {
         Toast.makeText(this, "Please wait....", Toast.LENGTH_LONG).show();
         locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -383,40 +430,8 @@ public class RegisterSeller extends AppCompatActivity implements LocationListene
         }
     }
 
-    private boolean checklocalpermisson(){
-        boolean result= ContextCompat.checkSelfPermission(this,Manifest.permission.ACCESS_FINE_LOCATION)
-                == (PackageManager.PERMISSION_GRANTED);
-        return result;
-    }
-    private void requestlocationpermisson()
-    {
-        ActivityCompat.requestPermissions(this,locationpermisson,LOCATION_REQUEST_CODE);
-    }
-
-    private boolean checkstoragepermisson(){
-        boolean result = ContextCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE)==
-                (PackageManager.PERMISSION_GRANTED);
-        return result;
-    }
-    private void requestedstoragepermisson(){
-        ActivityCompat.requestPermissions(this,storagepermisson,STORAGE_REQUEST_CODE);
-    }
-    private boolean checkcamerapermisson(){
-        boolean result = ContextCompat.checkSelfPermission(this
-                ,Manifest.permission.CAMERA)==(PackageManager.PERMISSION_GRANTED);
-        boolean result1 = ContextCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE)==
-                (PackageManager.PERMISSION_GRANTED);
-
-        return result && result1;
-    }
-    private void requestcamerapermisson(){
-        ActivityCompat.requestPermissions(this,camerapermisson,CAMERA_REQUEST_CODE);
-    }
-
-
     @Override
     public void onLocationChanged(@NonNull Location location) {
-        //location detected
         latitude = location.getLatitude();
         longitude=location.getLongitude();
         findAddress();
@@ -437,8 +452,25 @@ public class RegisterSeller extends AppCompatActivity implements LocationListene
         //gps disabled
         Toast.makeText(this, "Please turn on location", Toast.LENGTH_SHORT).show();
     }
+    private boolean checkcamerapermisson(){
+        boolean result = ContextCompat.checkSelfPermission(this
+                ,Manifest.permission.CAMERA)==(PackageManager.PERMISSION_GRANTED);
+        boolean result1 = ContextCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE)==
+                (PackageManager.PERMISSION_GRANTED);
 
-
+        return result && result1;
+    }
+    private void requestcamerapermisson(){
+        ActivityCompat.requestPermissions(this,camerapermisson,CAMERA_REQUEST_CODE);
+    }
+    private boolean checkstoragepermisson(){
+        boolean result = ContextCompat.checkSelfPermission(this,Manifest.permission.WRITE_EXTERNAL_STORAGE)==
+                (PackageManager.PERMISSION_GRANTED);
+        return result;
+    }
+    private void requestedstoragepermisson(){
+        ActivityCompat.requestPermissions(this,storagepermisson,STORAGE_REQUEST_CODE);
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -461,22 +493,22 @@ public class RegisterSeller extends AppCompatActivity implements LocationListene
             }
             break;
             case CAMERA_REQUEST_CODE:{
-                    if (grantResults.length>0)
+                if (grantResults.length>0)
+                {
+                    boolean cameraAccepted = grantResults [0] == PackageManager.PERMISSION_GRANTED;
+                    boolean storageAccepted = grantResults [1] == PackageManager.PERMISSION_GRANTED;
+                    if (cameraAccepted && storageAccepted)
                     {
-                        boolean cameraAccepted = grantResults [0] == PackageManager.PERMISSION_GRANTED;
-                        boolean storageAccepted = grantResults [1] == PackageManager.PERMISSION_GRANTED;
-                        if (cameraAccepted && storageAccepted)
-                        {
-                            //permisson allowed
-                            pickfromcamera();
-                        }
-                        else {
-                            //permisson denied
-                            Toast.makeText(this, "camera permisson is necessary....", Toast.LENGTH_SHORT).show();
-                        }
+                        //permisson allowed
+                        pickfromcamera();
+                    }
+                    else {
+                        //permisson denied
+                        Toast.makeText(this, "camera permisson is necessary....", Toast.LENGTH_SHORT).show();
                     }
                 }
-                break;
+            }
+            break;
             case STORAGE_REQUEST_CODE:{
                 if (grantResults.length>0)
                 {

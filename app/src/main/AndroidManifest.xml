@@ -20,6 +20,12 @@
         android:theme="@style/Theme.Daraz"
         tools:targetApi="31">
         <activity
+            android:name=".ProfileEditSeller"
+            android:exported="false" />
+        <activity
+            android:name=".ProfileEditUser"
+            android:exported="false" />
+        <activity
             android:name=".MainUser"
             android:exported="false" />
         <activity

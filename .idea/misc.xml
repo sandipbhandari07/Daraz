@@ -3,13 +3,18 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/daraz/app/src/main/res/drawable/back.xml" value="0.2525" />
         <entry key="..\:/daraz/app/src/main/res/drawable/btn_login.xml" value="0.2535" />
         <entry key="..\:/daraz/app/src/main/res/drawable/btn_login_full.xml" value="0.2265" />
         <entry key="..\:/daraz/app/src/main/res/drawable/btn_login_rgb.xml" value="0.251" />
+        <entry key="..\:/daraz/app/src/main/res/drawable/delivery.xml" value="0.2525" />
         <entry key="..\:/daraz/app/src/main/res/drawable/gps.xml" value="0.2535" />
         <entry key="..\:/daraz/app/src/main/res/drawable/ic_baseline_person_24.xml" value="0.2535" />
         <entry key="..\:/daraz/app/src/main/res/drawable/intro_btn_gradient_style.xml" value="0.2495" />
+        <entry key="..\:/daraz/app/src/main/res/drawable/location.xml" value="0.2525" />
         <entry key="..\:/daraz/app/src/main/res/drawable/person.xml" value="0.2535" />
+        <entry key="..\:/daraz/app/src/main/res/drawable/phone.xml" value="0.2525" />
+        <entry key="..\:/daraz/app/src/main/res/drawable/shop.xml" value="0.2525" />
         <entry key="..\:/daraz/app/src/main/res/font/aclonica.xml" value="0.284375" />
         <entry key="..\:/daraz/app/src/main/res/font/akaya_telivigala.xml" value="0.284375" />
         <entry key="..\:/daraz/app/src/main/res/font/antic.xml" value="0.284375" />
@@ -20,6 +25,10 @@
         <entry key="..\:/daraz/app/src/main/res/font/bungee.xml" value="0.284375" />
         <entry key="..\:/daraz/app/src/main/res/layout/activity_forget_password.xml" value="0.2" />
         <entry key="..\:/daraz/app/src/main/res/layout/activity_login.xml" value="0.2" />
+        <entry key="..\:/daraz/app/src/main/res/layout/activity_main_seller.xml" value="0.25416666666666665" />
+        <entry key="..\:/daraz/app/src/main/res/layout/activity_main_user.xml" value="0.25416666666666665" />
+        <entry key="..\:/daraz/app/src/main/res/layout/activity_profile_edit_seller.xml" value="0.25416666666666665" />
+        <entry key="..\:/daraz/app/src/main/res/layout/activity_profile_edit_user.xml" value="0.25416666666666665" />
         <entry key="..\:/daraz/app/src/main/res/layout/activity_register_seller.xml" value="0.25" />
         <entry key="..\:/daraz/app/src/main/res/layout/activity_register_user.xml" value="0.2" />
         <entry key="..\:/daraz/app/src/main/res/layout/activity_splash.xml" value="0.22826086956521738" />
