@@ -1,5 +1,6 @@
 package project.clone.daraz;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -12,6 +13,14 @@ import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
 public class splashActivity extends AppCompatActivity {
 
     private static int SPLASH_SCREEN = 4150;
@@ -19,6 +28,8 @@ public class splashActivity extends AppCompatActivity {
     Animation bottom,top;
     TextView txtslogan,txt;
     ImageView logo;
+
+    private FirebaseAuth firebaseAuth;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,14 +48,54 @@ public class splashActivity extends AppCompatActivity {
         txt.setAnimation(bottom);
         logo.setAnimation(bottom);
 
+        firebaseAuth = FirebaseAuth.getInstance();
 
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                Intent intent=new Intent(splashActivity.this,LoginActivity.class);
-                startActivity(intent);
-                finish();
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user == null){
+                    //user not logged in start login activity
+                    startActivity(new Intent(splashActivity.this,LoginActivity.class));
+                    finish();
+                }
+                else {
+                    //user is logged in,check user type
+                    checkuserType();
+                }
             }
-        },SPLASH_SCREEN);
+        },1000);
+    }
+
+    private void checkuserType() {
+        //if user is seller , start seller main
+
+        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Users");
+        reference.orderByChild("uid").equalTo(firebaseAuth.getUid())
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        for (DataSnapshot ds : snapshot.getChildren()) {
+                            String accountType = "" + ds.child("accountType").getValue();
+                            if (accountType.equals("Seller")) {
+                                //user is seller
+                                startActivity(new Intent(splashActivity.this, MainSeller.class));
+                                finish();
+                            }
+                            else{
+
+                                //user is buyer
+                                startActivity(new Intent(splashActivity.this, MainUser.class));
+                                finish();
+                            }
+                        }
+                    }
+
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+
+                    }
+                });
     }
 }

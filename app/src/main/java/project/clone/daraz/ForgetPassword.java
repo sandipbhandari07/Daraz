@@ -2,11 +2,14 @@ package project.clone.daraz;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 public class ForgetPassword extends AppCompatActivity {
 
@@ -15,7 +18,8 @@ public class ForgetPassword extends AppCompatActivity {
     private EditText emailrecover;
     private Button recoverbtn;
 
-
+    private FirebaseAuth firebaseAuth;
+    private ProgressDialog progressDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,5 +35,14 @@ public class ForgetPassword extends AppCompatActivity {
                 onBackPressed();
             }
         });
+        recoverbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                recoverpassword();
+            }
+        });
+    }
+
+    private void recoverpassword() {
     }
 }
