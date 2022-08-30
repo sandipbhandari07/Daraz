@@ -50,7 +50,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-public class ProfileEditUser extends AppCompatActivity implements LocationListener {
+public class ProfileEditUser extends AppCompatActivity implements LocationListener{
 
     private ImageButton backbtn, gpsbtn;
     private ImageView profile;
@@ -105,6 +105,13 @@ public class ProfileEditUser extends AppCompatActivity implements LocationListen
         checkUser();
 
 
+        profile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //pick image
+                showImagepickDialog();
+            }
+        });
         updatebtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

@@ -33,6 +33,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.blogspot.atifsoftwares.circularimageview.CircularImageView;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -51,7 +52,7 @@ import java.util.Locale;
 public class RegisterUser extends AppCompatActivity implements LocationListener {
 
     private ImageButton backbtn, gpsbtn;
-    private ImageView profile;
+    private CircularImageView profile;
     private EditText name, phone, countryet, stateet, cityet, addresset, email, password, confirmpassword;
     private Button registerbtn;
     private TextView registerSeller;
@@ -76,6 +77,7 @@ public class RegisterUser extends AppCompatActivity implements LocationListener 
 
     private FirebaseAuth firebaseAuth;
     private ProgressDialog progressDialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

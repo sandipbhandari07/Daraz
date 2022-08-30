@@ -317,7 +317,7 @@ public class RegisterSeller extends AppCompatActivity implements LocationListene
                     if (checkstoragepermisson()) {
                         pickfromgallery();
                     } else {
-                        requestedstoragepermisson();
+                        requeststoragepermisson();
                     }
                 }
             }
@@ -398,7 +398,7 @@ public class RegisterSeller extends AppCompatActivity implements LocationListene
                 (PackageManager.PERMISSION_GRANTED);
         return result;
     }
-    private void requestedstoragepermisson(){
+    private void requeststoragepermisson(){
         ActivityCompat.requestPermissions(this,storagepermisson,STORAGE_REQUEST_CODE);
     }
     private boolean checkcamerapermisson(){
